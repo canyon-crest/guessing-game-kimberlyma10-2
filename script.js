@@ -17,6 +17,7 @@ function play({
     }
 
     document.getElementById("msg").textContent = 
-    "Guess a number 1-" + Range;
-
+    "Guess a number 1-" + range;
+    answer = Math.floor(Math.random()*range) +1;
+    guessCount = 0;
 }
