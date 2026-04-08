@@ -7,6 +7,10 @@
   <body>
     <p id="date"></p>
 
+    <!-- Added Name Input for t_name -->
+    <label for="playerName">Player Name: </label>
+    <input type="text" id="playerName" placeholder="Enter name">
+
     <h3>Level</h3>
     <input type="radio" name="level" id="e" value="3" checked><label for="e">Easy</label>
     <input type="radio" name="level" id="m" value="10"><label for="m">Medium</label>
@@ -15,7 +19,7 @@
     <button id="playBtn">Play</button>
 
     <h3 id="msg">Select a Level</h3>
-    <input type="text" id="guess">
+    <input type="number" id="guess">
     <button id="guessBtn" disabled>Guess</button>
     <button id="giveUpBtn" disabled>Give Up</button>
 
@@ -24,12 +28,13 @@
     <p id="avgScore">Average Score: </p>
     <p id="fastest">Fastest Game: </p>
     <p id="avgTime">Average Time: </p>
+    <p id="timerDisplay">Current Round: 0s</p>
 
     <h3>Leaderboard</h3>
-    <ol>
-      <li name="leaderboard">100</li>
-      <li name="leaderboard">100</li>
-      <li name="leaderboard">100</li>
+    <ol id="leaderboardList">
+      <li name="leaderboard">---</li>
+      <li name="leaderboard">---</li>
+      <li name="leaderboard">---</li>
     </ol>
   </body>
 </html>
