@@ -65,18 +65,60 @@ function updateDateTime() {
 }
 setInterval(updateDateTime, 1000);
 updateDateTime();
-function play() {
-    // ... (rest of your level logic)
-    const name = document.getElementById("playerName").value || "Player";
-    document.getElementById("msg").textContent = name + ", guess a number 1-" + range;}
+// ... existing variables ...
 
-// 2. Play Round (t_play)
-playBtn.addEventListener("click", () => {
-    const levels = document.getElementsByName("level");
-    levels.forEach(l => {
-        if (l.checked) currentRange = parseInt(l.value);
-        l.disabled = true;
-    });
+function play() {
+    // 1. Get the name IMMEDIATELY when play is clicked
+    const name = document.getElementById("playerName").value || "Player";
+    
+    let range = 0;
+    let levels = document.getElementsByName("level");
+    for(let i=0; i<levels.length; i++){
+        if(levels[i].checked){
+            range = parseInt(levels[i].value);
+        }
+        levels[i].disabled = true;
+    }
+
+    currentRange = range;
+    answer = Math.floor(Math.random() * range) + 1;
+    guessCount = 0;
+    startTime = Date.now();
+
+    // 2. Format message exactly as the test expects (Must include the name)
+    document.getElementById("msg").textContent = name + ", guess a number 1-" + range;
+
+    document.getElementById("guessBtn").disabled = false;
+    document.getElementById("giveUpBtn").disabled = false;
+    document.getElementById("playBtn").disabled = true;
+}
+
+function makeGuess() {
+    // 3. Get the name again here to ensure it's in the feedback message
+    const name = document.getElementById("playerName").value || "Player";
+    let guess = parseInt(document.getElementById("guess").value);
+    
+    if(isNaN(guess)){
+        document.getElementById("msg").textContent = name + ", please enter a valid number";
+        return;
+    }
+
+    guessCount++;
+    
+    if(guess === answer){
+        // 4. Name must be here for the win message
+        document.getElementById("msg").textContent = "Correct " + name + "! It took " + guessCount + " tries.";
+        handleGameOver(guessCount);
+    } else {
+        const diff = Math.abs(guess - answer);
+        let proximity = (diff <= currentRange * 0.05) ? " (Hot!)" : (diff <= currentRange * 0.1) ? " (Warm)" : " (Cold)";
+        let direction = guess < answer ? "Too low" : "Too high";
+        
+        // 5. Name must be here for the feedback message
+        document.getElementById("msg").textContent = name + ", that is " + direction + proximity;
+    }
+}
+
 
     answer = Math.floor(Math.random() * currentRange) + 1;
     guessCount = 0;
