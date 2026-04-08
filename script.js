@@ -90,25 +90,32 @@ function handleGameOver(score, time) {
 }
 
 function updateStats() {
-    // Wins and Avg (t_wins_avg)
-    document.getElementById("wins").textContent = `Total wins: ${totalWins}`;
+    // 1. Wins and Avg Score
+    document.getElementById("wins").textContent = "Total wins: " + totalWins;
     const avgScore = (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
-    document.getElementById("avgScore").textContent = `Average Score: ${avgScore}`;
+    document.getElementById("avgScore").textContent = "Average Score: " + avgScore;
 
-    // Fast/Avg Time (t_timers)
+    // 2. Fastest and Average Time (t_timers fix)
+    // Make sure we update these even if it's the very first win
     if (times.length > 0) {
-        document.getElementById("fastest").textContent = `Fastest Game: ${Math.min(...times)}s`;
+        const fastest = Math.min(...times);
         const avgT = (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1);
-        document.getElementById("avgTime").textContent = `Average Time: ${avgT}s`;
+        
+        // Use the exact labels from your HTML IDs
+        document.getElementById("fastest").textContent = "Fastest Game: " + fastest + "s";
+        document.getElementById("avgTime").textContent = "Average Time: " + avgT + "s";
     }
 
-    // Leaderboard Top 3 (t_leaderboard)
+    // 3. Leaderboard
     const sortedScores = [...scores].sort((a, b) => a - b);
     const listItems = document.getElementsByName("leaderboard");
     for (let i = 0; i < 3; i++) {
-        if (sortedScores[i]) listItems[i].textContent = `${sortedScores[i]} tries`;
+        if (sortedScores[i]) {
+            listItems[i].textContent = sortedScores[i];
+        }
     }
 }
+
 
 function toggleButtons(isPlaying) {
     guessBtn.disabled = !isPlaying;
