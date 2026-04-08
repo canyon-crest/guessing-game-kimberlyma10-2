@@ -27,6 +27,10 @@ function updateDateTime() {
 }
 setInterval(updateDateTime, 1000);
 updateDateTime();
+function play() {
+    // ... (rest of your level logic)
+    const name = document.getElementById("playerName").value || "Player";
+    document.getElementById("msg").textContent = name + ", guess a number 1-" + range;}
 
 // 2. Play Round (t_play)
 playBtn.addEventListener("click", () => {
