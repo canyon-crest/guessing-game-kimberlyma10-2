@@ -4,57 +4,55 @@ const scores = [];
 const times = [];
 let startTime, timerInterval;
 
-// Elements
 const playBtn = document.getElementById("playBtn");
 const guessBtn = document.getElementById("guessBtn");
 const giveUpBtn = document.getElementById("giveUpBtn");
 const msg = document.getElementById("msg");
 const nameInput = document.getElementById("playerName");
 
+function launchConfetti() {
+    const duration = 1500;
+    const end = Date.now() + duration;
 
-// Inside the play function
-function play() {
-    // ... level and range logic ...
-    const name = document.getElementById("playerName").value || "Player";
-    // Exact format usually expected by tests
-    document.getElementById("msg").textContent = name + ", guess a number 1-" + currentRange;
-    
-    // ... start timers and disable buttons ...
+    (function frame() {
+        for (let i = 0; i < 5; i++) {
+            createConfettiPiece();
+        }
+        if (Date.now() < end) requestAnimationFrame(frame);
+    })();
 }
 
-// Inside the makeGuess function
-function makeGuess() {
-    const guess = parseInt(document.getElementById("guess").value);
-    const name = document.getElementById("playerName").value || "Player"; // Fetch name again here
-    
-    if (isNaN(guess)) {
-        document.getElementById("msg").textContent = name + ", please enter a valid number";
-        return;
-    }
-
-    guessCount++;
-
-    if (guess === answer) {
-        // Test looks for the name in the final "Correct" message
-        document.getElementById("msg").textContent = "Correct " + name + "! It took " + guessCount + " tries.";
-        handleGameOver(guessCount);
-    } else {
-        const diff = Math.abs(guess - answer);
-        let proximity = (diff <= currentRange * 0.05) ? " (Hot!)" : (diff <= currentRange * 0.1) ? " (Warm)" : " (Cold)";
-        
-        // Test likely checks that the name persists during high/low feedback
-        let direction = guess < answer ? "Too low" : "Too high";
-        document.getElementById("msg").textContent = name + ", that is " + direction + proximity;
-    }
+function createConfettiPiece() {
+    const confetti = document.createElement("div");
+    confetti.className = "confetti";
+    confetti.style.left = Math.random() * 100 + "vw";
+    confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+    confetti.style.animationDuration = (Math.random() * 1 + 1) + "s";
+    document.body.appendChild(confetti);
+    setTimeout(() => confetti.remove(), 2000);
 }
 
+function saveData() {
+    localStorage.setItem("wins", totalWins);
+    localStorage.setItem("scores", JSON.stringify(scores));
+    localStorage.setItem("times", JSON.stringify(times));
+}
 
-// 1. Live Date & Time with Suffixes (t_date & t_livetime)
+function loadData() {
+    totalWins = parseInt(localStorage.getItem("wins")) || 0;
+    const savedScores = JSON.parse(localStorage.getItem("scores"));
+    const savedTimes = JSON.parse(localStorage.getItem("times"));
+    if (savedScores) scores.push(...savedScores);
+    if (savedTimes) times.push(...savedTimes);
+}
+
+loadData();
+
 function updateDateTime() {
     const now = new Date();
-    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
     const date = now.getDate();
-    
+
     let suffix = "th";
     if (date % 10 === 1 && date !== 11) suffix = "st";
     else if (date % 10 === 2 && date !== 12) suffix = "nd";
@@ -65,16 +63,15 @@ function updateDateTime() {
 }
 setInterval(updateDateTime, 1000);
 updateDateTime();
-// ... existing variables ...
 
 function play() {
-    // 1. Get the name IMMEDIATELY when play is clicked
-    const name = document.getElementById("playerName").value || "Player";
-    
+    const name = nameInput.value || "Player";
+
     let range = 0;
     let levels = document.getElementsByName("level");
-    for(let i=0; i<levels.length; i++){
-        if(levels[i].checked){
+
+    for (let i = 0; i < levels.length; i++) {
+        if (levels[i].checked) {
             range = parseInt(levels[i].value);
         }
         levels[i].disabled = true;
@@ -85,101 +82,93 @@ function play() {
     guessCount = 0;
     startTime = Date.now();
 
-    // 2. Format message exactly as the test expects (Must include the name)
-    document.getElementById("msg").textContent = name + ", guess a number 1-" + range;
+    clearInterval(timerInterval);
 
-    document.getElementById("guessBtn").disabled = false;
-    document.getElementById("giveUpBtn").disabled = false;
-    document.getElementById("playBtn").disabled = true;
-}
-
-function makeGuess() {
-    // 3. Get the name again here to ensure it's in the feedback message
-    const name = document.getElementById("playerName").value || "Player";
-    let guess = parseInt(document.getElementById("guess").value);
-    
-    if(isNaN(guess)){
-        document.getElementById("msg").textContent = name + ", please enter a valid number";
-        return;
-    }
-
-    guessCount++;
-    
-    if(guess === answer){
-        // 4. Name must be here for the win message
-        document.getElementById("msg").textContent = "Correct " + name + "! It took " + guessCount + " tries.";
-        handleGameOver(guessCount);
-    } else {
-        const diff = Math.abs(guess - answer);
-        let proximity = (diff <= currentRange * 0.05) ? " (Hot!)" : (diff <= currentRange * 0.1) ? " (Warm)" : " (Cold)";
-        let direction = guess < answer ? "Too low" : "Too high";
-        
-        // 5. Name must be here for the feedback message
-        document.getElementById("msg").textContent = name + ", that is " + direction + proximity;
-    }
-}
-
-
-    answer = Math.floor(Math.random() * currentRange) + 1;
-    guessCount = 0;
-    startTime = Date.now();
-    
-    // Start Round Timer (t_timers)
     timerInterval = setInterval(() => {
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
         document.getElementById("timerDisplay").textContent = `Current Round: ${elapsed}s`;
     }, 1000);
 
-    msg.textContent = `${nameInput.value || "Player"}, guess 1-${currentRange}!`;
-    toggleButtons(true);
-});
+    msg.textContent = `${name}, guess a number 1-${range}`;
 
-// 3. Guess Logic & Proximity (t_feedback & t_proximity)
-guessBtn.addEventListener("click", () => {
-    const guess = parseInt(document.getElementById("guess").value);
+    toggleButtons(true);
+}
+
+function makeGuess() {
     const name = nameInput.value || "Player";
+    let guess = parseInt(document.getElementById("guess").value);
+
+    if (isNaN(guess)) {
+        msg.textContent = `${name}, please enter a valid number`;
+        return;
+    }
+
+    if (guess < 1 || guess > currentRange) {
+        msg.textContent = `${name}, enter a number between 1 and ${currentRange}`;
+        return;
+    }
+
     guessCount++;
 
     if (guess === answer) {
         const timeTaken = Math.floor((Date.now() - startTime) / 1000);
         msg.textContent = `Correct ${name}! ${guessCount} tries in ${timeTaken}s.`;
+        launchConfetti();
+        document.body.classList.add("win-glow");
+        setTimeout(() => document.body.classList.remove("win-glow"), 1000);
         handleGameOver(guessCount, timeTaken);
     } else {
         const diff = Math.abs(guess - answer);
+
         let proximity = "";
-        
-        // Hot/Warm/Cold logic (t_proximity)
-        if (diff <= 2) proximity = " (Hot!)";
-        else if (diff <= 5) proximity = " (Warm)";
+        if (diff <= currentRange * 0.02) proximity = " (🔥 SUPER HOT)";
+        else if (diff <= currentRange * 0.05) proximity = " (Hot!)";
+        else if (diff <= currentRange * 0.1) proximity = " (Warm)";
         else proximity = " (Cold)";
 
-        msg.textContent = (guess < answer ? "Too low" : "Too high") + proximity;
-    }
-});
+        let direction = guess < answer ? "Too low" : "Too high";
 
-// 4. Give Up (t_giveup)
+        msg.textContent = `${name}, that is ${direction}${proximity}`;
+
+        document.body.classList.add("shake");
+        setTimeout(() => document.body.classList.remove("shake"), 300);
+
+        if (guessCount % 5 === 0) {
+            const hint = answer % 2 === 0 ? "even" : "odd";
+            msg.textContent += ` | Hint: The number is ${hint}`;
+        }
+    }
+
+    document.getElementById("guess").value = "";
+}
+
 giveUpBtn.addEventListener("click", () => {
     msg.textContent = `The answer was ${answer}. Score set to ${currentRange}.`;
-    handleGameOver(currentRange, 0); // Sets score to range
+    handleGameOver(currentRange, 0);
 });
 
 function handleGameOver(score, time) {
     clearInterval(timerInterval);
+
     totalWins++;
     scores.push(score);
     if (time > 0) times.push(time);
-    
+
+    saveData();
+
     updateStats();
     toggleButtons(false);
 }
+
 function updateStats() {
-    // 1. Wins and Avg Score (t_wins_avg)
     document.getElementById("wins").textContent = "Total wins: " + totalWins;
-    const avgScore = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 0;
+
+    const avgScore = scores.length > 0
+        ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)
+        : 0;
+
     document.getElementById("avgScore").textContent = "Average Score: " + avgScore;
 
-    // 2. Timers (t_timers fix)
-    // The test looks for a digit (\d) in these specific IDs
     let fastestVal = 0;
     let avgTimeVal = 0;
 
@@ -188,26 +177,37 @@ function updateStats() {
         avgTimeVal = (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1);
     }
 
-    // Explicitly update so the test finds a digit immediately
     document.getElementById("fastest").textContent = "Fastest Game: " + fastestVal + "s";
     document.getElementById("avgTime").textContent = "Average Time: " + avgTimeVal + "s";
 
-    // 3. Leaderboard Top 3 (t_leaderboard)
+    const bestScore = scores.length > 0 ? Math.min(...scores) : "---";
+    document.getElementById("bestScore").textContent = "Best Score: " + bestScore;
+
     const sortedScores = [...scores].sort((a, b) => a - b);
     const listItems = document.getElementsByName("leaderboard");
+
     for (let i = 0; i < 3; i++) {
-        // Reset text first, then fill if score exists
         listItems[i].textContent = sortedScores[i] !== undefined ? sortedScores[i] : "---";
     }
 }
-
-
 
 function toggleButtons(isPlaying) {
     guessBtn.disabled = !isPlaying;
     giveUpBtn.disabled = !isPlaying;
     playBtn.disabled = isPlaying;
+
     if (!isPlaying) {
         document.getElementsByName("level").forEach(l => l.disabled = false);
     }
 }
+
+playBtn.addEventListener("click", play);
+guessBtn.addEventListener("click", makeGuess);
+
+document.getElementById("guess").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        makeGuess();
+    }
+});
+
+updateStats();
